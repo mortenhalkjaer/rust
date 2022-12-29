@@ -5,7 +5,53 @@ use std::{
   };
 use server::ThreadPool;
 
+
+pub trait Draw {
+  fn draw(&self);
+}
+
+pub struct Button {
+   text: String,
+}
+
+impl Draw for Button {
+  fn draw(&self) {
+    print!("{}\n", self.text);
+  }
+}
+
+pub struct TextBox {
+  x: i32, 
+  y: i32,
+}
+
+impl Draw for TextBox {
+  fn draw(&self) {
+    print!("textbox {}{}\n", self.x, self.y);
+  }
+}
+
+struct UI {
+  items: Vec<Box<dyn Draw>>
+}
+
 fn main() {
+  let ui = UI {
+    items: vec![
+      Box::new(TextBox { x: 2, y: 3}),
+      Box::new(Button { text: String::from("he") })
+    ]
+  };
+
+  for x in ui.items.iter() {
+    x.draw();
+  }
+  print!("done\n");
+  
+}
+
+fn main1() {
+  print!("Hej\n");
   let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
   let pool = ThreadPool::new(4);
   for stream in listener.incoming() {
