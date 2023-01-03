@@ -29,10 +29,12 @@ pub mod which {
   }
 
   pub fn run() {
+    // todo : check if path not defined
     let path = std::env::var("PATH").unwrap();
     let filename: String = String::from("fcw");
     // todo : get filename from command line
     // todo: avoid duplicated code
+    // todo : get extensions from pathext
     search(".\\", &filename).and_then(|f|{ println!("{}\\{}", ".\\", f); Some(f) } );
 
     for dir in path.split(";") {
