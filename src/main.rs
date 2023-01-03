@@ -1,9 +1,12 @@
+pub mod which;
+
 use std::{
   fs,
   io::{prelude::*, BufReader},
   net::{TcpListener, TcpStream},
   };
-use server::ThreadPool;
+//use server::ThreadPool;
+//use crate::which::which::run;
 
 
 pub trait Draw {
@@ -21,7 +24,7 @@ impl Draw for Button {
 }
 
 pub struct TextBox {
-  x: i32, 
+  x: i32,
   y: i32,
 }
 
@@ -36,6 +39,8 @@ struct UI {
 }
 
 fn main() {
+  which::which::run();
+
   let ui = UI {
     items: vec![
       Box::new(TextBox { x: 2, y: 3}),
@@ -47,19 +52,18 @@ fn main() {
     x.draw();
   }
   print!("done\n");
-  
 }
 
 fn main1() {
   print!("Hej\n");
   let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
-  let pool = ThreadPool::new(4);
+  /*let pool = ThreadPool::new(4);
   for stream in listener.incoming() {
     let stream = stream.unwrap();
     pool.execute(|| {
       handle_connection(stream);
     });
-  }
+  }*/
 }
 
 fn handle_connection(mut stream: TcpStream) {
