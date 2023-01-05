@@ -27,20 +27,21 @@ pub mod which {
   }
 
   fn search(directory: &str, search_for: &String, extensions: &Vec<&str>) -> io::Result<Option<String>> {
-    for file in fs::read_dir(directory)? {
-      let filename = file.unwrap().file_name().into_string().unwrap();
+    let s =
+    fs::read_dir(directory)?.into_iter()
+      .filter_map(|file|{
+        let filename = file.unwrap().file_name().into_string().unwrap();
+        if filename.len() >= search_for.len() { return Some(filename); } else { return None; }
+      })
+      .find(|filename| {
+        let expected_length = filename.len() - search_for.len();
 
-      for search_ext in extensions {
-        let s = *search_ext;
+        extensions.into_iter()
+            .filter(|ext| { ext.len() == expected_length })
+            .any(|ext| { starts_with(&filename, search_for) && ends_with(&filename, ext) })
+      });
 
-        if filename.len() == s.len() + search_for.len() {
-          if starts_with(&filename, search_for) && ends_with(&filename, s) {
-              return Ok(Some(filename));
-          }
-        }
-      }
-    }
-    return Ok(None);
+    return Ok(s);
   }
 
   pub fn run() {
@@ -57,7 +58,10 @@ pub mod which {
 
     for dir in current.iter().chain(paths.iter()) {
       search(dir, &filename, &extensions)
-      .and_then(|f|{ println!("Found: {}{}", dir, f); Some(f) } );
+        .and_then(|f|{
+          Ok(f.and_then(|g | { println!("Found: {}\\{}", dir, g); Some(g) } ))
+         }
+        );
     }
   }
 }
