@@ -1,7 +1,8 @@
 
 pub mod which {
     use std::env;
-//    use std::fs;
+    use std::fs;
+    use std::io;
     use std::path;
     use std::str;
     //use std::iter;
@@ -25,30 +26,21 @@ pub mod which {
     return true;
   }
 
-  fn search(directory: &str, search_for: &String, extensions: &Vec<&str>) -> Option<String> {
-    let b : bool = path::Path::new(directory).is_dir() && directory.len()>0;
+  fn search(directory: &str, search_for: &String, extensions: &Vec<&str>) -> io::Result<Option<String>> {
+    for file in fs::read_dir(directory)? {
+      let filename = file.unwrap().file_name().into_string().unwrap();
 
-    if b {
-      for file in std::fs::read_dir(directory).unwrap() {
-        let filename = file.unwrap().file_name().into_string().unwrap();
+      for search_ext in extensions {
+        let s = *search_ext;
 
-          for search_ext in extensions {
-            let s = *search_ext;
-
-            if filename.len() == s.len() + search_for.len() {
-              if starts_with(&filename, search_for) {
-
-
-                if ends_with(&filename, s) {
-                  return Some(filename);
-                }
-              }
-            }
+        if filename.len() == s.len() + search_for.len() {
+          if starts_with(&filename, search_for) && ends_with(&filename, s) {
+              return Ok(Some(filename));
           }
-
+        }
       }
-    };
-    None
+    }
+    return Ok(None);
   }
 
   pub fn run() {
@@ -57,7 +49,6 @@ pub mod which {
     let pathext = env::var("PATHEXT").unwrap();
     let filename: String = String::from("xcopy");
     // todo : get filename from command line
-    // todo: avoid duplicated code - use chain
 
     let current : Vec<&str> = vec!(".\\");
     let paths : Vec<&str> = path.split(";").collect();
