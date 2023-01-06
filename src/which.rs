@@ -3,8 +3,10 @@ pub mod which {
     use std::env;
     use std::fs;
     use std::io;
-    use std::path;
+  
     use std::str;
+    use std::iter;
+    
     //use std::iter;
 
   fn starts_with(s: &String, substr: &str) -> bool {
@@ -44,24 +46,23 @@ pub mod which {
     return Ok(s);
   }
 
-  pub fn run() {
-    // todo : check if path not defined
-    let path = env::var("PATH").unwrap();
-    let pathext = env::var("PATHEXT").unwrap();
+  pub fn run() {    
+    let path = env::var("PATH").expect("Missing PATH");
+    let pathext = env::var("PATHEXT").expect("Missing PATHEXT");
     let filename: String = String::from("xcopy");
     // todo : get filename from command line
-
-    let current : Vec<&str> = vec!(".\\");
-    let paths : Vec<&str> = path.split(";").collect();
-
     let extensions: Vec<&str> = pathext.split(";").collect();
-
-    for dir in current.iter().chain(paths.iter()) {
-      search(dir, &filename, &extensions)
-        .and_then(|f|{
-          Ok(f.and_then(|g | { println!("Found: {}\\{}", dir, g); Some(g) } ))
-         }
-        );
-    }
+ 
+    for dir in iter::once(".\\").chain(path.split(";")) {
+      match search(dir, &filename, &extensions) {
+        Ok(filename) => {
+          match filename {
+            Some(f) => println!("Found: {}\\{}", dir, f),
+            None => {}
+          }
+        },
+        Err(err) => { println!("Unable to scan {}: {} ", dir, err); }
+      };
+    };
   }
 }
